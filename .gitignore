@@ -1,0 +1,28 @@
+# backup files
+*.bak.0*
+*.bak
+*~
+*.swp
+
+# build tmp files
+*.ii.cpp
+*.ii.o
+*.mid.cpp
+*.mid.o
+*.cpp.d
+*.cpp.pre
+*.cxx.d
+*.cxx.pre
+
+*.o
+*.un.so
+
+# lib related files
+Makefile
+*.usc
+
+# nfs
+.nfs*
+
+*.tar.gz
+html/
