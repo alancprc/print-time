@@ -1,5 +1,6 @@
 #include <gmock/gmock.h>
 #include "../../print-time/print-time.h"
+#include "../../print-time/profileTT.h"
 
 #include <Unison.h>
 
@@ -42,4 +43,40 @@ TEST(PrintTimeTest, snapTest)
   pt.Snap("before wait 1ms");
   TIME.Wait(1e-3);
   pt.Snap("after wait 1ms");
+}
+
+TEST(UtilFuncTest, singleItemTest)
+{
+  PTT.OnStartProfileTTime(1, "on start");
+  PTT.SnapProfileTTime("1");
+  TIME.Wait(1e-3);
+  PTT.OnStopProfileTTime();
+}
+
+TEST(UtilFuncTest, shortTest)
+{
+  PTT.OnStartProfileTTime(1, "on start");
+  PTT.SnapProfileTTime("1");
+  EXPECT_NO_THROW(PTT.SnapProfileTTime("2"));
+  EXPECT_NO_THROW(PTT.SnapProfileTTime("3"));
+  for (int i = 0; i != 10; ++i) {
+    EXPECT_NO_THROW(PTT.SnapProfileTTimeDetail("loop"));
+    TIME.Wait(1e-3);
+  }
+  EXPECT_NO_THROW(PTT.SnapProfileTTime("4"));
+  PTT.OnStopProfileTTime();
+}
+
+TEST(UtilFuncTest, detailedTest)
+{
+  PTT.OnStartProfileTTime(2, "on start");
+  PTT.SnapProfileTTime("1");
+  EXPECT_NO_THROW(PTT.SnapProfileTTime("2"));
+  EXPECT_NO_THROW(PTT.SnapProfileTTime("3"));
+  for (int i = 0; i != 10; ++i) {
+    EXPECT_NO_THROW(PTT.SnapProfileTTimeDetail("loop"));
+    TIME.Wait(1e-3);
+  }
+  EXPECT_NO_THROW(PTT.SnapProfileTTime("4"));
+  PTT.OnStopProfileTTime();
 }
