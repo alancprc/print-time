@@ -1,4 +1,5 @@
 #include <gmock/gmock.h>
+#include "../../print-time/print-time.h"
 
 #include <Unison.h>
 
@@ -23,3 +24,22 @@ TMResultM StartGTest()
   return result == 0 ? TM_PASS : TM_FAIL;
 }
 
+TEST(PrintTimeTest, startstopTest)
+{
+  PrintTime pt(__PRETTY_FUNCTION__);
+  TIME.Wait(10e-3);
+
+  pt.Start();
+  TIME.Wait(1e-3);
+  pt.Stop("wait 1ms");
+}
+
+TEST(PrintTimeTest, snapTest)
+{
+  PrintTime pt(__PRETTY_FUNCTION__);
+  TIME.Wait(10e-3);
+  pt.Start();
+  pt.Snap("before wait 1ms");
+  TIME.Wait(1e-3);
+  pt.Snap("after wait 1ms");
+}
