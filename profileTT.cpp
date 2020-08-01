@@ -1,5 +1,5 @@
 #include "profileTT.h"
-//#include <stdlib.h>
+#include <stdlib.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -7,19 +7,11 @@
 #include <iostream>
 #include <string>
 
-#define STR_FS 35  // text field width >=6
-
 using namespace std;
 
-// globals
 ProfileTT PTT;  //create global PTT ProfileTT object
 
-const int TMAX_MEAS_N = 900;  // maximum number of Print_TEST_time statements in the program run
-const int TMAX_LOOP_N = 10;  // number of runs for timing statistics
-
-const int TMAX_WAIT_N = 1000;  // used to measure total wait() statements time see Timing_WAIT_print
-const int TMAX_TW_WAIT = 20;  // used for tweaking waits in Timing_tw_results
-const int TMAX_TW_R = 10;
+const int InitSnapSize = 512;
 
 enum TIMING_PRINT_TYPE {
   TIMING_PRINT_NONE,  // supported print types
@@ -29,13 +21,12 @@ enum TIMING_PRINT_TYPE {
   TIMING_PRINT_IMMEDIATE,
 };
 
-//const 	int     STR_FS             			= 35;  // field width of Print_TEST_time text
-
+const int STR_FS = 35;  // field width of Print_TEST_time text
 // data arrays
-static double profileSnap_a[TMAX_MEAS_N];
-int profileDFlag_a[TMAX_MEAS_N];
-char profileStr_a[TMAX_MEAS_N][STR_FS];
-char m_titleStr[STR_FS];
+static vector<double> snapTime;
+static vector<int> isDetailed;
+static vector<string> snapMsg;
+static char m_titleStr[STR_FS];
 
 static UTL_TIME TimeP;  // measure time with unison UTL_TIME class
 static int timingPrintMode;
@@ -46,21 +37,18 @@ static double firstSnapTime;
 static double lastSnapTime;
 static double indexTime;
 
-// ProfileTT class:
-/////////////////////////////////////////////////////////////////////
-
 ProfileTT::ProfileTT()
 {
   lastSnapTime = 0.0;
   firstSnapTime = 0.0;
+
+  snapTime.reserve(InitSnapSize);
+  isDetailed.reserve(InitSnapSize);
+  snapMsg.reserve(InitSnapSize);
 }
 
-ProfileTT::~ProfileTT() {}
-
-////////////////////////////////////////////////////////////////////////
 void ProfileTT::OnStartProfileTTime(UnsignedS profilePrintMode, const char *titleStr)
 {
-  // starts profiler timer
   //cout<<"profilePrintMode  " << profilePrintMode<<endl;
 
   if ((profilePrintMode < TIMING_PRINT_NONE) || (profilePrintMode > TIMING_PRINT_IMMEDIATE)) {
@@ -90,6 +78,9 @@ void ProfileTT::OnStartProfileTTime(UnsignedS profilePrintMode, const char *titl
   strncpy(m_titleStr, titleStr, STR_FS - 1);
 
   snapCount = 0;
+  snapTime.push_back(0);
+  isDetailed.push_back(1);
+  snapMsg.push_back("");
 
   if (timingPrintMode == TIMING_PRINT_IMMEDIATE) {
     printf("*******************************************************************************\n");
@@ -97,10 +88,9 @@ void ProfileTT::OnStartProfileTTime(UnsignedS profilePrintMode, const char *titl
     printf("*******************************************************************************\n");
   }
 }
+
 double ProfileTT::OnStopProfileTTime()
 {
-  // print test time summary at end of program
-
   double timing_ex_time_total = 0.;
   lastSnapTime = TimeP.GetTimer() * 1000.;
 
@@ -109,34 +99,38 @@ double ProfileTT::OnStopProfileTTime()
     timing_ex_time_total = TimeP.GetTimer() * 1000.;
   }
   else {
-    timing_ex_time_total = profileSnap_a[snapCount];
+    timing_ex_time_total = snapTime[snapCount];
 
     PrintHeader();
     PrintTestTimes();
     PrintTotalTime(timing_ex_time_total);
   }
 
+  snapTime.clear();
+  isDetailed.clear();
+  snapMsg.clear();
+
   return (timing_ex_time_total);
 }
 
 double ProfileTT::GetIndexTime() { return (indexTime); }
-////////////////////////////////////////////////////////////////////////
+
 void ProfileTT::SnapProfileTTime(const char *message)
 {
-  // snap timer for profile execution time
-
   double elapsedTime;
 
   if (timingPrintMode != TIMING_PRINT_NONE) {
     snapCount++;
 
-    profileSnap_a[snapCount] = TimeP.GetTimer() * 1000.;
-    profileDFlag_a[snapCount] = 1;
+    snapTime.push_back(TimeP.GetTimer() * 1000.);
+    isDetailed.push_back(1);
 
-    strncpy(profileStr_a[snapCount], message, STR_FS - 1 - 5);
+    char tmp[STR_FS] = "\0";
+    strncpy(tmp, message, STR_FS - 1 - 5);
+    snapMsg.push_back(tmp);
 
     if (timingPrintMode == TIMING_PRINT_IMMEDIATE) {
-      elapsedTime = profileSnap_a[snapCount] - profileSnap_a[snapCount - 1];
+      elapsedTime = snapTime[snapCount] - snapTime[snapCount - 1];
       printf("%-*s %11.3f\n", STR_FS - 1, message, elapsedTime);
     }
   }
@@ -144,11 +138,9 @@ void ProfileTT::SnapProfileTTime(const char *message)
 
 void ProfileTT::SnapProfileTTimeDetail(const char *message)
 {
-  // snap timer for detailed profile execution time
-
   if (timingPrintMode == TIMING_PRINT_DETAILED) {
     SnapProfileTTime(message);
-    profileDFlag_a[snapCount] = 0;
+    isDetailed[snapCount] = 0;
   }
 }
 void ProfileTT::GetProfileTTimes(FloatS1D &profileTime, StringS1D &profileTimeStr)
@@ -161,16 +153,16 @@ void ProfileTT::GetProfileTTimes(FloatS1D &profileTime, StringS1D &profileTimeSt
     profileTimeStr.Resize(snapCount, SV_CONTENT_LOSE);
 
     for (int i = 1; i < snapCount + 1; i++) {
-      elapsedTime = profileSnap_a[i] - profileSnap_a[i - 1];
+      elapsedTime = snapTime[i] - snapTime[i - 1];
       totalDetailTime = totalDetailTime + elapsedTime;
 
-      profileTimeStr[i - 1] = (StringS)profileStr_a[i];
+      profileTimeStr[i - 1] = snapMsg[i].c_str();
 
       if (timingPrintMode == TIMING_PRINT_SHORT) {
         profileTime[i - 1] = elapsedTime;
       }
       else {
-        if (profileDFlag_a[i] == 1) {
+        if (isDetailed[i] == 1) {
           profileTime[i - 1] = totalDetailTime;
           totalDetailTime = 0.;
         }
@@ -186,11 +178,8 @@ void ProfileTT::GetProfileTTimes(FloatS1D &profileTime, StringS1D &profileTimeSt
   }
 }
 
-////////////////////////////////////////////////////////////////////////
 void ProfileTT::PrintHeader()
 {
-  // private print test time profile header
-
   switch (timingPrintMode) {
     case TIMING_PRINT_SHORT:
       printf("*******************************************************************************\n");
@@ -220,8 +209,6 @@ void ProfileTT::PrintHeader()
 
 void ProfileTT::PrintTestTimes()
 {
-  // private print test time profile
-
   double referenceTime = 0.;
   double referenceTimeRatio = 0.;
   double elapsedTime = 0.;
@@ -233,19 +220,18 @@ void ProfileTT::PrintTestTimes()
   }
   else {
     for (int i = 1; i < snapCount + 1; i++) {
-      elapsedTime = profileSnap_a[i] - profileSnap_a[i - 1];
+      elapsedTime = snapTime[i] - snapTime[i - 1];
       totalDetailTime = totalDetailTime + elapsedTime;
 
-      printf("%4d %-*s", i, STR_FS - 5, profileStr_a[i]);
+      printf("%4d %-*s", i, STR_FS - 5, snapMsg[i].c_str());
 
       switch (timingPrintMode) {
         case TIMING_PRINT_SHORT:
-          elapsedTimePercent = 100. * elapsedTime / profileSnap_a[snapCount];
-          printf("%11.3f%11.3f%11.3f\n", elapsedTime, elapsedTimePercent,
-                 profileSnap_a[i]);
+          elapsedTimePercent = 100. * elapsedTime / snapTime[snapCount];
+          printf("%11.3f%11.3f%11.3f\n", elapsedTime, elapsedTimePercent, snapTime[i]);
           break;
         case TIMING_PRINT_DETAILED:
-          if (profileDFlag_a[i] == 1) {
+          if (isDetailed[i] == 1) {
             printf("%11.3f", totalDetailTime);
             totalDetailTime = 0.;
           }
@@ -275,8 +261,6 @@ void ProfileTT::PrintTestTimes()
 
 void ProfileTT::PrintTotalTime(double totalTestTime)
 {
-  // private print total test time profile
-
   double totalRefTestTime;
 
   printf("*******************************************************************************\n");
@@ -334,8 +318,6 @@ void ProfileTT::PrintlnExecTime()
 
 double ProfileTT::GetElapsedTime()
 {
-  // returns elapsedTime in ms since last GetElapsedTime
-
   static double elapsedTimeS = 0.;
   static double execTimeLastS = 0.;
 
@@ -344,4 +326,3 @@ double ProfileTT::GetElapsedTime()
 
   return (elapsedTimeS);
 }
-
