@@ -24,7 +24,7 @@ const int TMAX_TW_R = 10;
 enum TIMING_PRINT_TYPE {
   TIMING_PRINT_NONE,  // supported print types
   TIMING_PRINT_SHORT,
-  TIMING_PRINT_DETAIED,
+  TIMING_PRINT_DETAILED,
   TIMING_PRINT_DELTA,
   TIMING_PRINT_IMMEDIATE,
 };
@@ -70,7 +70,7 @@ void ProfileTT::OnStartProfileTTime(UnsignedS profilePrintMode, const char *titl
     cout << " supported modes:  " << endl;
     cout << "  TIMING_PRINT_NONE      " << TIMING_PRINT_NONE << endl;
     cout << "  TIMING_PRINT_SHORT     " << TIMING_PRINT_SHORT << endl;
-    cout << "  TIMING_PRINT_DETAIED   " << TIMING_PRINT_DETAIED << endl;
+    cout << "  TIMING_PRINT_DETAILED   " << TIMING_PRINT_DETAILED << endl;
     cout << "  TIMING_PRINT_DELTA     " << TIMING_PRINT_DELTA << endl;
     cout << "  TIMING_PRINT_IMMEDIATE " << TIMING_PRINT_IMMEDIATE << endl;
 
@@ -146,7 +146,7 @@ void ProfileTT::SnapProfileTTimeDetail(const char *message)
 {
   // snap timer for detailed profile execution time
 
-  if (timingPrintMode == TIMING_PRINT_DETAIED) {
+  if (timingPrintMode == TIMING_PRINT_DETAILED) {
     SnapProfileTTime(message);
     profileDFlag_a[snapCount] = 0;
   }
@@ -197,7 +197,7 @@ void ProfileTT::PrintHeader()
       printf("%-*s %11s%11s%11s\n", STR_FS - 1, m_titleStr, "current", "current%", "snap");
       printf("*******************************************************************************\n");
       break;
-    case TIMING_PRINT_DETAIED:
+    case TIMING_PRINT_DETAILED:
       printf("*******************************************************************************\n");
       printf("%-*s %11s%11s\n", STR_FS - 1, m_titleStr, "current", "detailed");
       printf("*******************************************************************************\n");
@@ -244,7 +244,7 @@ void ProfileTT::PrintTestTimes()
           printf("%11.3f%11.3f%11.3f\n", elapsedTime, elapsedTimePercent,
                  profileSnap_a[i]);
           break;
-        case TIMING_PRINT_DETAIED:
+        case TIMING_PRINT_DETAILED:
           if (profileDFlag_a[i] == 1) {
             printf("%11.3f", totalDetailTime);
             totalDetailTime = 0.;
@@ -289,7 +289,7 @@ void ProfileTT::PrintTotalTime(double totalTestTime)
     case TIMING_PRINT_SHORT:
       printf("%11.3f%11.3f%11.3f\n", totalTestTime, 100., totalTestTime);
       break;
-    case TIMING_PRINT_DETAIED:
+    case TIMING_PRINT_DETAILED:
       printf("%11.3f%11.3f\n", totalTestTime, totalTestTime);
       break;
     case TIMING_PRINT_DELTA:
