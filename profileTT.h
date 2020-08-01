@@ -53,4 +53,12 @@ class ProfileTT
   static void PrintTotalTime(double);
 };
 
+enum TIMING_PRINT_TYPE {
+  TIMING_PRINT_NONE = 0,      // supported print types
+  TIMING_PRINT_SHORT = 1,     // print SnapProfileTTime only
+  TIMING_PRINT_DETAILED = 2,  // print SnapProfileTTime and SnapProfileTTimeDetail
+  TIMING_PRINT_DELTA = 3,     // print delta
+  TIMING_PRINT_IMMEDIATE = 4,  // print duaring test
+};
+
 extern ProfileTT PTT;  //create global PTT

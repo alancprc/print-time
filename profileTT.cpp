@@ -13,14 +13,6 @@ ProfileTT PTT;  //create global PTT ProfileTT object
 
 const int InitSnapSize = 512;
 
-enum TIMING_PRINT_TYPE {
-  TIMING_PRINT_NONE,  // supported print types
-  TIMING_PRINT_SHORT,
-  TIMING_PRINT_DETAILED,
-  TIMING_PRINT_DELTA,
-  TIMING_PRINT_IMMEDIATE,
-};
-
 const int STR_FS = 35;  // field width of Print_TEST_time text
 // data arrays
 static vector<double> snapTime;
