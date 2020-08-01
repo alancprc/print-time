@@ -1,0 +1,100 @@
+Unison:SyntaxRevision1909.3;
+
+__TestProg utl_test {
+    __ParamCheck = 0;
+        __AdapterBoard = dummy_pkg;
+        __Flow = sample_flow;
+        __BinMap = sample_binmap;
+        __Mode = 0x00000000, 0x00000000, 0x80000000;
+        __CollectTestSummaryInfo = __True;
+        __FunctionalFails = 1;
+        __IOStreamList[0] {
+           __IOStreamType = DataViewIO;
+           __IOStreamCode = 0x000019fb;
+        }
+        __LotTypeSummary = "Lot";
+        __ReportSummary = "Final";
+        __ShowAllExecTime = __False;
+        __SearchPaths {
+          "$CUSTOMER_DIR/unison/ltx/methods";
+          "$CUSTOMER_DIR/unison/ltx/libraries";
+          "$CUSTOMER_DIR/unison/site/methods";
+          "$CUSTOMER_DIR/unison/site/libraries";
+          "./";
+          "$LTXHOME/unison/ltx/code_templates";
+        }
+}
+__ExternalRef {
+   __File = "common.uno";
+}
+__ExternalRef {
+   __File = "../lib.uno";
+}
+
+__ApplicationLibrary UnitTest {
+   __LibraryPath = "./";
+   __BuildPath = "./build";
+   __LibraryType = __Debug;
+   __Source = "unittest.cpp";
+   __IncludePath = "./";
+   __IncludePath = "/usr/local/include";
+   __LinkerFlags = "-lpthread";
+   __LinkerFlags = "-lgmock_main -lgmock -lgtest";
+   __CompilerFlags = "-pthread";
+   __CompilerFlags = "-DGTEST_LINKED_AS_SHARED_LIBRARY=1";
+   __CompilerFlags = "-fno-gnu-unique";
+   __DependsOnLibrary = PrintTime;
+}
+
+__SubFlow evDefaultReset {
+    __Node FlowNode_10 {
+        __XCoord = (-1,-1);
+        __TestID = "";
+        __EnableExpression = __Expression { __String = "TRUE"; __Type = BOOLEAN; }
+        __Exec = evResetBin;
+    }
+    __StartNode = FlowNode_10;
+}
+__SubFlow OnStart_sf {
+    __TestGroup tgStartGTest {
+        __XCoord = (50,50);
+        __Port[0] {
+            __PortPosition = 180;
+        }
+        __Port[1] {
+            __PortPosition = 90;
+        }
+        __InputPosition = 0;
+        __TestID = "8000000";
+        __EnableExpression = __Expression { __String = "TRUE"; __Type = BOOLEAN; }
+        __Exec = __Test {
+            __PortExpression[0] = __Expression { __String = ".Result = TM_RESULT:TM_PASS"; }
+            __PortExpression[1] = __Expression { __String = "TRUE"; }
+            __Block[0] = {
+                __Title = Block1;
+                __TestMethod {
+                    __Name = StartGTest;
+                }
+            }
+        }
+    }
+    __Node FlowNode_138 {
+        __XCoord = (50,200);
+        __InputPosition = 0;
+        __TestID = "";
+        __EnableExpression = __Expression { __String = "TRUE"; __Type = BOOLEAN; }
+        __Exec = Pass;
+    }
+    __Node FlowNode_139 {
+        __XCoord = (150,200);
+        __InputPosition = 0;
+        __TestID = "";
+        __EnableExpression = __Expression { __String = "TRUE"; __Type = BOOLEAN; }
+        __Exec = Fail;
+    }
+    __StartNode = tgStartGTest;
+    __PortConnections {
+        tgStartGTest __Port[0] = FlowNode_138;
+        tgStartGTest __Port[1] = FlowNode_139;
+    }
+}
